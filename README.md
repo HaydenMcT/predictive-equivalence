@@ -1,6 +1,6 @@
 # Leveraging Predictive Equivalence in Decision Trees
 
-This repository hosts code to replicate the experiments in the ICML 2025 Paper `Leveraging Predictive Equivalence in Decision Trees`.
+This repository hosts code to replicate the experiments in the ICML 2025 Paper [Leveraging Predictive Equivalence in Decision Trees](https://arxiv.org/abs/2506.14143).
 
 ## Environment
 To use the environment specified in `requirements.txt`, run the following commands:
