@@ -1,6 +1,15 @@
 # Leveraging Predictive Equivalence in Decision Trees
 
-This repository hosts code to replicate the experiments in the ICML 2025 Paper [Leveraging Predictive Equivalence in Decision Trees](https://arxiv.org/abs/2506.14143).
+This repository hosts code to replicate the experiments in the ICML 2025 Paper [Leveraging Predictive Equivalence in Decision Trees](https://arxiv.org/abs/2506.14143). Suggested bibtex citation: 
+```
+@inproceedings{mctavish2025leveragingpredictiveequivalencedecision,
+      title={Leveraging Predictive Equivalence in Decision Trees}, 
+      author={Hayden McTavish and Zachery Boner and Jon Donnelly and Margo Seltzer and Cynthia Rudin},
+      year={2025},
+      booktitle={International Conference on Machine Learning {(ICML)}},
+      organization={PMLR}
+}
+```
 
 ## Environment
 To use the environment specified in `requirements.txt`, run the following commands:
