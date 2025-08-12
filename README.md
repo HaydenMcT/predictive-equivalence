@@ -51,6 +51,8 @@ If the script does not include any array reasoning, simply directly
 run the python call.
 
 ### Replicating Specific Sections
+NOTE: Please refer to the `icml-replication` [release](https://github.com/HaydenMcT/predictive-equivalence/releases/tag/icml-replication) for the code as of publication, which should be used for precise replication.
+
 - The experiments for Section 4 are run using `slurm_scripts/index_mcar_rset_count.slurm`,
 and aggregated using `experiments/mcar_results/rset_count/get_sizes.ipynb`
 - The experiments and plotting for Section 5.1 are
