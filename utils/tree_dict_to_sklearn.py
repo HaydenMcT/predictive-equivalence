@@ -10,7 +10,7 @@ def construct_sklearn_tree_from_dict(tree_dict, n_features):
     feature = np.array([], dtype=np.int64) 
     threshold = np.array([], dtype=np.float64)
     value = np.zeros((0, 1, 2), dtype=np.float64)
-    order_nodes_were_visited = {}
+    node_visit_order_to_node_id = {}
 
     result_info = {
         'children_left': children_left,
@@ -21,7 +21,7 @@ def construct_sklearn_tree_from_dict(tree_dict, n_features):
     }
 
     def _recurse_to_dict(node):
-        order_nodes_were_visited[n_nodes[0]] = node['id']
+        node_visit_order_to_node_id[n_nodes[0]] = node['id']
         n_nodes[0] = n_nodes[0] + 1
         
         # If we're at an internal node
@@ -31,26 +31,21 @@ def construct_sklearn_tree_from_dict(tree_dict, n_features):
             result_info['children_right'] = np.concatenate([result_info['children_right'], np.array([node['true']['id']])])
             # For internal nodes, predicted value is kinda meaningless, so use 0.5
             result_info['value'] = np.concatenate([result_info['value'], 0.5 + np.zeros((1, 1, 2))])
-        else:
-            # If we're at a leaf, no right child -- indicate with -1
-            result_info['children_right'] = np.concatenate([result_info['children_right'], np.array([-1])])
-            new_value = np.zeros((1, 1, 2))
-            new_value[:, :, node['prediction']] = 1
-            result_info['value'] = np.concatenate([result_info['value'], new_value], axis=0)
-
-        if 'false' in node:
-            print(f"Adding {np.array([node['true']['id']])} to left")
             result_info['children_left'] = np.concatenate([result_info['children_left'], np.array([node['false']['id']])])
-        else:
-            result_info['children_left'] = np.concatenate([result_info['children_left'], np.array([-1])])
 
-        if 'true' in node:
             result_info['feature'] = np.concatenate([result_info['feature'], np.array([node['feature']])])
             result_info['threshold'] = np.concatenate([result_info['threshold'], np.array([node['threshold']])])
             n_internal_nodes[0] += 1
             _recurse_to_dict(node['false'])
             _recurse_to_dict(node['true'])
         else:
+            # If we're at a leaf, no right child -- indicate with -1
+            result_info['children_right'] = np.concatenate([result_info['children_right'], np.array([-1])])
+            new_value = np.zeros((1, 1, 2))
+            new_value[:, :, node['prediction']] = 1
+            result_info['value'] = np.concatenate([result_info['value'], new_value], axis=0)
+            result_info['children_left'] = np.concatenate([result_info['children_left'], np.array([-1])])
+
             result_info['feature'] = np.concatenate([result_info['feature'], np.array([-2])])
             result_info['threshold'] = np.concatenate([result_info['threshold'], np.array([-2])])
 
@@ -77,9 +72,13 @@ def construct_sklearn_tree_from_dict(tree_dict, n_features):
     tree = clf.tree_
 
     # In case we visited nodes in a weird order, correct this
-    corrected_ordering = [None] * len(order_nodes_were_visited)
-    for k in order_nodes_were_visited:
-        corrected_ordering[order_nodes_were_visited[k]] = k
+    corrected_ordering = [None] * len(node_visit_order_to_node_id)
+    # corrected_ordering will be a list of length (num_nodes),
+    # such that indexing with correct ordering will place each value
+    # in the location corresponding to its node_id, not its 
+    # visit order
+    for k in node_visit_order_to_node_id:
+        corrected_ordering[node_visit_order_to_node_id[k]] = k
 
     tree.children_left[:] = result_info['children_left'][corrected_ordering]
     tree.children_right[:] = result_info['children_right'][corrected_ordering]
