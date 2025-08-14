@@ -80,9 +80,11 @@ def correctly_preds_true(tree_type='DNF'):
     assert (tree.predict(X)[0])
 
 def test_correctly_id_nan():
+    correctly_id_nan(tree_type='MissTree')
     correctly_id_nan(tree_type='PCC')
     correctly_id_nan(tree_type='DNF')
 
 def test_correctly_preds_true():
+    correctly_preds_true(tree_type='MissTree')
     correctly_preds_true(tree_type='PCC')
     correctly_preds_true(tree_type='DNF')

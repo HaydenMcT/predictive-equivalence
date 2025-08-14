@@ -647,7 +647,47 @@ class PCCTree(TreeClassifierWrapper):
                 list(pcc.get_false_features())) + ' are all false, predict False\n'
 
         return output
+    
+class MissTree(TreeClassifierWrapper):
+    """
+    A wrapper for TreeClassifier to handle missing values at prediction time, 
+    in time proportional to the number of nodes rather than requiring a logical simplification
+    at fit time.
+    """
+    def __init__(self, source, encoder=None, X=None, y=None):
+        super().__init__(source, encoder=encoder, X=X, y=y)
 
+    def classify(self, x):
+        """
+        Classify samples in X, handling missing values.
+        Returns the prediction and a second return value (deprecated)
+        (to support the TreeClassifier interface, which asks for probabilities)
+        """
+        '''
+        Consider all leaves it is possible to reach with different completions 
+        of the missing values; if all leaves have the same prediction, return 
+        that prediction. If the predictions differ, return np.nan. 
+        '''
+        nodes = [self.source]
+        prediction = None
+        while len(nodes) > 0:
+            node = nodes.pop()
+            if "prediction" in node:
+                if prediction is None:
+                    prediction = node["prediction"]
+                elif prediction != node["prediction"]:
+                    return np.nan, np.nan
+            else:
+                value = x[node["feature"]]
+                if pd.isna(value):
+                    # If the value is missing, we need to consider both branches
+                    nodes.append(node["true"])
+                    nodes.append(node["false"])
+                elif value == 1:
+                    nodes.append(node["true"])
+                else:
+                    nodes.append(node["false"])
+        return prediction, -1
 
 def create_tree_classifier(source, encoder=None, X=None, y=None, tree_type='DNF'):
     if tree_type == 'DNF':
@@ -660,4 +700,6 @@ def create_tree_classifier(source, encoder=None, X=None, y=None, tree_type='DNF'
         return PCCTree(source, encoder=encoder, X=X, y=y)
     if tree_type == 'Conservative':
         return ConservativeTree(source, encoder=encoder, X=X, y=y)
+    if tree_type == 'MissTree':
+        return MissTree(source, encoder=encoder, X=X, y=y)
     return TreeClassifierWrapper(source, encoder=encoder, X=X, y=y)
